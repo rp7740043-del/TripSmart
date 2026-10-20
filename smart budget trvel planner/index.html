@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TripSmart – Smart Budget Travel Planner with Integrated Booking and Cost Optimization</title>
+  <meta name="description" content="Plan, customize, optimize, and book complete trips across India with TripSmart. Automatic 3-tier expense comparison, budget optimization engine, and simulated one-click booking.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d9488">
+
+  <!-- External Styles & Fonts -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- CDN Libraries: Lucide Icons, Chart.js, Canvas Confetti, jsPDF -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="app-header">
+    <div class="container navbar-inner">
+      <!-- Brand Logo -->
+      <a href="#home" class="brand-logo" aria-label="TripSmart Home">
+        <div class="brand-icon">
+          <i data-lucide="compass"></i>
+        </div>
+        <span>Trip<span class="brand-highlight">Smart</span></span>
+        <span class="brand-badge">PRO</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links" id="main-nav-links">
+          <li><a href="#home" class="nav-link active" data-view="home" data-i18n="navHome"><i data-lucide="home"></i> Home</a></li>
+          <li><a href="#plan" class="nav-link" data-view="plan" data-i18n="navPlan"><i data-lucide="map-pin"></i> Plan Trip</a></li>
+          <li><a href="#destinations" class="nav-link" data-view="destinations" data-i18n="navDestinations"><i data-lucide="globe"></i> Destinations</a></li>
+          <li><a href="#my-trips" class="nav-link" data-view="my-trips" data-i18n="navMyTrips"><i data-lucide="briefcase"></i> My Trips</a></li>
+          <li><a href="#bookings" class="nav-link" data-view="bookings" data-i18n="navBookings"><i data-lucide="check-circle-2"></i> Bookings</a></li>
+          <li><a href="#about" class="nav-link" data-view="about" data-i18n="navAbout"><i data-lucide="info"></i> About</a></li>
+        </ul>
+      </nav>
+
+      <!-- Utility Actions -->
+      <div class="nav-actions">
+        <!-- Currency Converter Select -->
+        <select class="compact-select" id="currency-select" onchange="window.TravelTools.setCurrency(this.value); window.App.renderDestinationsGallery(); if(window.WizardApp) window.WizardApp.renderCurrentStep();" title="Select Currency">
+          <option value="INR">₹ INR</option>
+          <option value="USD">$ USD</option>
+          <option value="EUR">€ EUR</option>
+          <option value="GBP">£ GBP</option>
+          <option value="AED">AED</option>
+        </select>
+
+        <!-- Multi-language Toggle -->
+        <select class="compact-select" id="lang-select" onchange="window.App.setLanguage(this.value)" title="Language">
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+          <option value="mr">मराठी</option>
+        </select>
+
+        <!-- Wishlist Quick View Button -->
+        <button class="icon-btn" onclick="window.App.renderDestinationsGallery('all', '', 'wishlist')" title="Wishlist">
+          <i data-lucide="heart"></i>
+          <span class="badge-pill wishlist-counter">3</span>
+        </button>
+
+        <!-- Light/Dark Mode Toggle -->
+        <button class="icon-btn" id="theme-toggle-btn" onclick="window.App.toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme">
+          <i data-lucide="moon" id="theme-toggle-icon"></i>
+        </button>
+
+        <!-- User Profile Avatar Modal Trigger -->
+        <button class="icon-btn" onclick="window.App.showModal('Traveler Profile', '<div style=\'text-align:center; padding:10px;\'><div style=\'width:70px; height:70px; border-radius:50%; background:var(--primary-gradient); color:white; font-size:1.8rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;\'>RP</div><h4>Rohan Patil</h4><p style=\'color:var(--text-muted); font-size:0.85rem;\'>rohan.traveler@example.com</p><div class=\'tag tag-success\' style=\'margin:10px 0;\'>TripSmart Explorer Member</div><p style=\'font-size:0.9rem; margin-top:10px;\'>Saved Trips: <strong>1</strong> | Confirmed Bookings: <strong>3</strong></p></div>')" title="User Profile">
+          <i data-lucide="user"></i>
+        </button>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button class="icon-btn mobile-menu-toggle" style="display:none;" onclick="document.getElementById('main-nav-links').classList.toggle('mobile-open')" aria-label="Toggle navigation menu">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Multi-Page App Router Container -->
+  <main>
+
+    <!-- ==========================================================================
+         PAGE 1: HOME LANDING PAGE (#home)
+         ========================================================================== -->
+    <section id="view-home" class="page-view active">
+      <!-- Hero Banner -->
+      <div class="hero-section">
+        <div class="container">
+          <div class="hero-header">
+            <div class="hero-pill-badge">
+              <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+              <span data-i18n="heroTag">Smart Budget Travel Planner & Cost Optimizer</span>
+            </div>
+            <h1 class="hero-title" data-i18n="heroTitle">
+              Travel Smarter, Plan Better, <span class="highlight">Spend Less.</span>
+            </h1>
+            <p class="hero-subtitle" data-i18n="heroSubtitle">
+              Integrated multi-mode itinerary generator with automatic cost optimization, 3-tier comparisons, and seamless simulated bookings.
+            </p>
+          </div>
+
+          <!-- Hero Search & Planning Quick Widget -->
+          <div class="hero-search-card">
+            <form onsubmit="event.preventDefault(); window.WizardApp.goToStep(1); window.location.hash='#plan';" class="search-form-grid">
+              <div class="search-field">
+                <label data-i18n="fromLabel">FROM CITY</label>
+                <input type="text" id="hero-from-city" list="cities-datalist" value="Pune" placeholder="Departure City">
+              </div>
+              <div class="search-field">
+                <label data-i18n="toLabel">DESTINATION</label>
+                <input type="text" id="hero-destination" list="destinations-datalist" value="Goa" placeholder="Where do you want to go?">
+              </div>
+              <div class="search-field">
+                <label data-i18n="datesLabel">DATES</label>
+                <input type="date" id="hero-date" value="2026-10-24">
+              </div>
+              <div class="search-field">
+                <label data-i18n="travelersLabel">TRAVELERS</label>
+                <select id="hero-travelers">
+                  <option value="1">1 Solo</option>
+                  <option value="2" selected>2 Travelers</option>
+                  <option value="4">4 Friends/Family</option>
+                  <option value="6">6 Group</option>
+                </select>
+              </div>
+              <div class="search-field">
+                <label data-i18n="budgetLabel">BUDGET (₹)</label>
+                <input type="number" id="hero-budget" value="20000" step="1000">
+              </div>
+              <div class="search-field">
+                <button type="submit" class="btn btn-primary" style="height:44px; width:100%;" data-i18n="btnSearch">
+                  Plan Trip <i data-lucide="arrow-right"></i>
+                </button>
+              </div>
+            </form>
+
+            <!-- Quick Filter Pills -->
+            <div class="quick-filter-pills">
+              <span>Quick Explore:</span>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'all'); window.location.hash='#destinations';">All (54+)</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Beach'); window.location.hash='#destinations';">🏖️ Beaches</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Hills'); window.location.hash='#destinations';">🏔️ Mountains & Snow</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Heritage'); window.location.hash='#destinations';">🏰 Heritage & Palaces</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Spiritual'); window.location.hash='#destinations';">🕉️ Spiritual & Ghats</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('West', '', 'all'); window.location.hash='#destinations';">🚗 Weekend Getaways</button>
+            </div>
+          </div>
+
+          <!-- Panoramic Visual Banner Collage -->
+          <div class="hero-visual-collage">
+            <div class="collage-item">
+              <img src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&auto=format&fit=crop&q=80" alt="Goa Beach Sunset">
+              <div class="item-overlay">Goa Coastal Shacks</div>
+            </div>
+            <div class="collage-item">
+              <img src="https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&auto=format&fit=crop&q=80" alt="Jaipur Royal Palaces">
+              <div class="item-overlay">Jaipur Royal Heritage</div>
+            </div>
+            <div class="collage-item">
+              <img src="https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&auto=format&fit=crop&q=80" alt="Manali Snow Valley">
+              <div class="item-overlay">Manali Snow Valleys</div>
+            </div>
+            <div class="collage-item">
+              <img src="https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=800&auto=format&fit=crop&q=80" alt="Kerala Backwaters Houseboat">
+              <div class="item-overlay">Kerala Houseboats</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem & Solution Interactive Section -->
+      <section class="problem-solution-section">
+        <div class="container">
+          <div class="section-head">
+            <span class="tag tag-primary" style="margin-bottom:8px;">Why TripSmart?</span>
+            <h2>Solving the Fragmented Travel Booking Nightmare</h2>
+            <p>From opening 10 browser tabs to calculating costs in spreadsheets, planning travel was broken. Here is how TripSmart fixes it.</p>
+          </div>
+
+          <div class="ps-comparison-grid">
+            <!-- Problem Card -->
+            <div class="ps-card problem">
+              <span class="ps-badge">❌ The Traditional Problem</span>
+              <h3>Fragmented, Exhausting & Guesswork</h3>
+              <p>Planning a vacation across multiple disparate portals results in budget blowouts and confusion.</p>
+              <ul>
+                <li>❌ Juggling IRCTC for trains, separate apps for hotels, local cabs, and entry passes.</li>
+                <li>❌ No visibility into full overall trip costs until credit cards are maxed out.</li>
+                <li>❌ Manually recalculating daily spends on paper or spreadsheets.</li>
+                <li>❌ Hidden taxes, surge pricing, and no intelligent cost reduction alternatives.</li>
+              </ul>
+            </div>
+
+            <!-- Solution Card -->
+            <div class="ps-card solution">
+              <span class="ps-badge">✅ The TripSmart Solution</span>
+              <h3>All-in-One Sequence & Cost Optimizer</h3>
+              <p>TripSmart unifies trip sequencing, 3-tier expense comparison, and live budget optimization.</p>
+              <ul>
+                <li>✅ <strong>End-to-End Sequence:</strong> Day-wise itinerary with outbound travel, check-in, sights, and return.</li>
+                <li>✅ <strong>3-Tier Comparison:</strong> Cheapest vs Standard vs Premium cards for all 7 expense categories.</li>
+                <li>✅ <strong>"Optimize My Budget" Algorithm:</strong> Automatically trims high expenses to fit your budget.</li>
+                <li>✅ <strong>Simulated One-Click Booking:</strong> Checkout all items together with instant invoice bills and PDF export.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works (6-Step Interactive Workflow) -->
+      <section class="how-it-works-section">
+        <div class="container">
+          <div class="section-head">
+            <span class="tag tag-accent" style="margin-bottom:8px;">Easy 6-Step Workflow</span>
+            <h2>How TripSmart Plans & Optimizes Your Journey</h2>
+            <p>Our intelligent engine walks you seamlessly from initial inspiration to a booked, itemized itinerary.</p>
+          </div>
+
+          <div class="workflow-steps-grid">
+            <div class="step-card">
+              <span class="step-number">01</span>
+              <div class="step-icon-box"><i data-lucide="calendar"></i></div>
+              <h4>1. Enter Trip Details</h4>
+              <p>Pick departure city, destination, travel dates, passenger count, and your target budget in ₹.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-number">02</span>
+              <div class="step-icon-box"><i data-lucide="git-commit"></i></div>
+              <h4>2. Generate Itinerary Sequence</h4>
+              <p>Automated day-wise schedule ordered nearest location first, with drag-and-drop reordering.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-number">03</span>
+              <div class="step-icon-box"><i data-lucide="sliders"></i></div>
+              <h4>3. Compare 3-Tier Expenses</h4>
+              <p>Evaluate Budget vs Standard vs Premium options across trains, hotels, transit, and activities.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-number">04</span>
+              <div class="step-icon-box"><i data-lucide="pie-chart"></i></div>
+              <h4>4. Customize & Optimize Budget</h4>
+              <p>Live donut and bar charts with the magic 1-click Optimizer that downgrades high costs.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-number">05</span>
+              <div class="step-icon-box"><i data-lucide="credit-card"></i></div>
+              <h4>5. Book Each Service</h4>
+              <p>Simulated unified checkout (UPI, Card, Net Banking) with instant confirmed reference IDs.</p>
+            </div>
+            <div class="step-card">
+              <span class="step-number">06</span>
+              <div class="step-icon-box"><i data-lucide="file-text"></i></div>
+              <h4>6. Final Itinerary & Bills</h4>
+              <p>Comprehensive day-wise master plan, GST tax invoice, PDF download, and WhatsApp sharing.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Popular Destinations Carousel Grid -->
+      <section class="destinations-section">
+        <div class="container">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:30px; flex-wrap:wrap; gap:15px;">
+            <div>
+              <span class="tag tag-primary">Trending Getaways</span>
+              <h2 style="font-size:2.2rem; margin-top:4px;">Popular Destinations</h2>
+            </div>
+            <a href="#destinations" class="btn btn-outline">Explore All 54+ Places →</a>
+          </div>
+
+          <div class="destination-grid" id="popular-destinations-carousel">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Smart Features Grid -->
+      <section style="padding:70px 0; background:var(--bg-page); border-top:1px solid var(--border-color);">
+        <div class="container">
+          <div class="section-head">
+            <span class="tag tag-primary">Utility Powerhouse</span>
+            <h2>Integrated Travel Tools</h2>
+            <p>Everything you need for stress-free travel in one cohesive ecosystem.</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px;">
+            <div class="card card-hover" style="cursor:pointer;" onclick="window.App.showModal('Group Expense Splitter', '<div id=\'modal-splitter-content\'></div>'); window.TravelTools.calculateSettlements(window.TravelTools.getGroupExpenses());">
+              <div class="step-icon-box" style="background:var(--secondary-light); color:var(--secondary);"><i data-lucide="users"></i></div>
+              <h4>Group Expense Splitter</h4>
+              <p style="font-size:0.88rem; color:var(--text-muted);">Who paid how much and who owes whom. Automatic peer settlement calculator.</p>
+            </div>
+            <div class="card card-hover" style="cursor:pointer;" onclick="window.App.showModal('Auto-Generated Packing Checklist', '<div id=\'modal-packing-content\'></div>');">
+              <div class="step-icon-box" style="background:var(--accent-light); color:var(--accent);"><i data-lucide="check-square"></i></div>
+              <h4>Smart Packing Checklist</h4>
+              <p style="font-size:0.88rem; color:var(--text-muted);">Auto-generated checklist customized for beaches, mountains, or spiritual journeys.</p>
+            </div>
+            <div class="card card-hover" style="cursor:pointer;" onclick="window.App.showModal('Eco Travel & Carbon Footprint', '<div style=\'text-align:center; padding:15px;\'><div style=\'font-size:2.5rem; margin-bottom:10px;\'>🌿</div><h4>Indian Railways: Greenest Travel Mode</h4><p style=\'color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;\'>Traveling by electric train emits only 0.025 kg CO2/km — 7x cleaner than flights and 4x cleaner than private cars!</p><div class=\'tag tag-success\'>Eco Certified Badge</div></div>');">
+              <div class="step-icon-box" style="background:var(--success-light); color:var(--success);"><i data-lucide="leaf"></i></div>
+              <h4>Eco-Friendly & Carbon Tracker</h4>
+              <p style="font-size:0.88rem; color:var(--text-muted);">Calculates estimated CO2 emissions across travel modes with tree offset equivalency.</p>
+            </div>
+            <div class="card card-hover" style="cursor:pointer;" onclick="window.App.showModal('Offers & Coupon Codes', '<div style=\'display:flex; flex-direction:column; gap:10px;\'><div class=\'card\' style=\'padding:14px; background:var(--primary-light);\'><strong style=\'font-size:1.1rem; color:var(--primary);\'>TRIP10</strong><p style=\'font-size:0.85rem;\'>10% off simulated bookings (up to ₹1,500)</p></div><div class=\'card\' style=\'padding:14px; background:var(--accent-light);\'><strong style=\'font-size:1.1rem; color:var(--accent);\'>BUDGET500</strong><p style=\'font-size:0.85rem;\'>Flat ₹500 discount on packages over ₹3,000</p></div></div>');">
+              <div class="step-icon-box" style="background:var(--warning-light); color:var(--warning);"><i data-lucide="tag"></i></div>
+              <h4>Offers & Promo Codes</h4>
+              <p style="font-size:0.88rem; color:var(--text-muted);">Apply coupon codes like TRIP10 and BUDGET500 for extra simulated savings at checkout.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section style="padding:80px 0; border-top:1px solid var(--border-color);">
+        <div class="container">
+          <div class="section-head">
+            <span class="tag tag-success">Loved by Travelers</span>
+            <h2>What Explorers Say About TripSmart</h2>
+            <p>From solo backpackers to family groups, hear how travelers optimized their budgets.</p>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:24px;">
+            <div class="card">
+              <div style="color:var(--warning); margin-bottom:10px;">★★★★★</div>
+              <p style="font-size:0.95rem; line-height:1.6; margin-bottom:16px;">
+                "The 'Optimize My Budget' button is pure magic! It downgraded our hotel and train choices intelligently and saved us ₹6,400 on our 4-day Goa vacation without ruining the experience."
+              </p>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:50%; background:#0d9488; color:white; display:flex; align-items:center; justify-content:center; font-weight:700;">AS</div>
+                <div>
+                  <strong>Aditya Sharma</strong>
+                  <div style="font-size:0.78rem; color:var(--text-muted);">Traveled Pune ➔ Goa</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="color:var(--warning); margin-bottom:10px;">★★★★★</div>
+              <p style="font-size:0.95rem; line-height:1.6; margin-bottom:16px;">
+                "Comparing Budget, Standard, and Premium cards side by side gave us total clarity on where our money was going. We loved having the PDF invoice and day-wise timeline right on our phones!"
+              </p>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:50%; background:#f97316; color:white; display:flex; align-items:center; justify-content:center; font-weight:700;">PK</div>
+                <div>
+                  <strong>Pooja Kulkarni</strong>
+                  <div style="font-size:0.78rem; color:var(--text-muted);">Traveled Mumbai ➔ Udaipur</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="color:var(--warning); margin-bottom:10px;">★★★★★</div>
+              <p style="font-size:0.95rem; line-height:1.6; margin-bottom:16px;">
+                "The built-in group splitter and simulated booking reference made planning our Manali friend trip effortless. Being able to drag-and-drop activities in the itinerary is a super intuitive touch."
+              </p>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:50%; background:#0284c7; color:white; display:flex; align-items:center; justify-content:center; font-weight:700;">NR</div>
+                <div>
+                  <strong>Nikhil Rao</strong>
+                  <div style="font-size:0.78rem; color:var(--text-muted);">Traveled Delhi ➔ Manali</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section style="padding:70px 0; background:var(--bg-page); border-top:1px solid var(--border-color);">
+        <div class="container" style="max-width:800px;">
+          <div class="section-head">
+            <span class="tag tag-primary">Got Questions?</span>
+            <h2>Frequently Asked Questions</h2>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="card" style="padding:18px;">
+              <h4 style="margin-bottom:8px;">How does the "Optimize My Budget" engine work?</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted);">
+                When your planned total exceeds your target budget, the algorithm analyzes the highest cost contributors (such as luxury stays or flight tickets) and systematically steps them down to high-value standard or budget alternatives until the total fits within your budget.
+              </p>
+            </div>
+            <div class="card" style="padding:18px;">
+              <h4 style="margin-bottom:8px;">Are payments real on this website?</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted);">
+                This prototype simulates bookings with mock data and test references (e.g. TS-20261020-XXXX). No real money is charged. Real bookings require authorized supplier connections such as IRCTC, hotel reservation CRS, and payment gateways.
+              </p>
+            </div>
+            <div class="card" style="padding:18px;">
+              <h4 style="margin-bottom:8px;">Can I edit every individual cost in my plan?</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted);">
+                Yes! In Step 4 (Customize Budget), every cost is inline-editable. You can change amounts, switch category tiers, add custom line-items, and delete or reset any item with full live chart recalculation.
+              </p>
+            </div>
+            <div class="card" style="padding:18px;">
+              <h4 style="margin-bottom:8px;">Does it work offline without a backend?</h4>
+              <p style="font-size:0.9rem; color:var(--text-muted);">
+                Yes! All destinations, saved trips, custom budgets, and bookings persist in your browser's localStorage. It works smoothly right out of the box.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ==========================================================================
+         PAGE 2: PLAN TRIP (6-Step Wizard) (#plan)
+         ========================================================================== -->
+    <section id="view-plan" class="page-view">
+      <div class="container wizard-container">
+
+        <!-- Wizard Progress Tracker Card -->
+        <div class="wizard-progress-card">
+          <div class="wizard-steps-track">
+            <div class="wizard-progress-bar">
+              <div class="wizard-progress-fill"></div>
+            </div>
+
+            <div class="step-indicator active" onclick="window.WizardApp.goToStep(1)">
+              <div class="step-circle">1</div>
+              <span class="step-label">Trip Details</span>
+            </div>
+            <div class="step-indicator" onclick="window.WizardApp.goToStep(2)">
+              <div class="step-circle">2</div>
+              <span class="step-label">Itinerary</span>
+            </div>
+            <div class="step-indicator" onclick="window.WizardApp.goToStep(3)">
+              <div class="step-circle">3</div>
+              <span class="step-label">Compare</span>
+            </div>
+            <div class="step-indicator" onclick="window.WizardApp.goToStep(4)">
+              <div class="step-circle">4</div>
+              <span class="step-label">Customize</span>
+            </div>
+            <div class="step-indicator" onclick="window.WizardApp.goToStep(5)">
+              <div class="step-circle">5</div>
+              <span class="step-label">Book Services</span>
+            </div>
+            <div class="step-indicator" onclick="window.WizardApp.goToStep(6)">
+              <div class="step-circle">6</div>
+              <span class="step-label">Final Bills</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== STEP 1: ENTER TRIP DETAILS ==================== -->
+        <div id="wizard-step-1" class="wizard-step-content active">
+          <div class="card">
+            <div class="step-heading-row">
+              <div>
+                <h3>Step 1: Enter Your Trip Details</h3>
+                <p style="color:var(--text-muted); font-size:0.95rem;">Set your departure city, destination, travel dates, passengers, and budget.</p>
+              </div>
+              <span class="tag tag-primary">Step 1 of 6</span>
+            </div>
+
+            <form onsubmit="event.preventDefault(); window.WizardApp.nextStep();">
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="wizard-from-city">Starting City (Departure) *</label>
+                  <input type="text" id="wizard-from-city" list="cities-datalist" required value="Pune" placeholder="e.g. Pune, Mumbai, Delhi">
+                </div>
+                <div class="form-group">
+                  <label for="wizard-destination">Destination *</label>
+                  <input type="text" id="wizard-destination" list="destinations-datalist" required value="Goa" placeholder="e.g. Goa, Jaipur, Manali">
+                </div>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="wizard-start-date">Start Date *</label>
+                  <input type="date" id="wizard-start-date" required value="2026-10-24">
+                </div>
+                <div class="form-group">
+                  <label for="wizard-end-date">End Date *</label>
+                  <input type="date" id="wizard-end-date" required value="2026-10-28">
+                </div>
+                <div class="form-group">
+                  <label>Calculated Stay</label>
+                  <div id="calculated-days-text" style="padding:10px 14px; background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-sm); font-weight:700; color:var(--primary);">
+                    4 Days / 3 Nights
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="form-group">
+                  <label for="wizard-adults-count">Adults (12+ yrs)</label>
+                  <input type="number" id="wizard-adults-count" min="1" max="20" value="2">
+                </div>
+                <div class="form-group">
+                  <label for="wizard-children-count">Children (2–11 yrs)</label>
+                  <input type="number" id="wizard-children-count" min="0" max="10" value="0">
+                </div>
+                <div class="form-group">
+                  <label for="wizard-budget">Total Target Budget (₹) *</label>
+                  <input type="number" id="wizard-budget" min="2000" step="500" value="20000">
+                </div>
+              </div>
+
+              <!-- Quick Budget Chips -->
+              <div style="margin-bottom:24px;">
+                <label style="font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-bottom:8px; display:block;">POPULAR BUDGET PRESETS</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button type="button" class="filter-chip" onclick="document.getElementById('wizard-budget').value = 10000;">₹10,000</button>
+                  <button type="button" class="filter-chip" onclick="document.getElementById('wizard-budget').value = 20000;">₹20,000</button>
+                  <button type="button" class="filter-chip" onclick="document.getElementById('wizard-budget').value = 35000;">₹35,000</button>
+                  <button type="button" class="filter-chip" onclick="document.getElementById('wizard-budget').value = 50000;">₹50,000</button>
+                  <button type="button" class="filter-chip" onclick="document.getElementById('wizard-budget').value = 100000;">₹1,00,000</button>
+                </div>
+              </div>
+
+              <!-- Travel Preference -->
+              <div class="form-group">
+                <label>Travel Preference / Style *</label>
+                <div class="chip-selector">
+                  <label class="chip-item">
+                    <input type="radio" name="travel_preference" value="Budget">
+                    <div class="chip-box">💰 Budget Backpacker</div>
+                  </label>
+                  <label class="chip-item">
+                    <input type="radio" name="travel_preference" value="Standard" checked>
+                    <div class="chip-box">⚖️ Standard (Recommended)</div>
+                  </label>
+                  <label class="chip-item">
+                    <input type="radio" name="travel_preference" value="Premium">
+                    <div class="chip-box">👑 Premium / Luxury</div>
+                  </label>
+                  <label class="chip-item">
+                    <input type="radio" name="travel_preference" value="Mixed">
+                    <div class="chip-box">🔀 Mixed / Custom</div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Trip Type -->
+              <div class="form-group">
+                <label>Trip Group Type</label>
+                <div class="chip-selector">
+                  <label class="chip-item"><input type="radio" name="trip_type" value="Solo"><div class="chip-box">🎒 Solo</div></label>
+                  <label class="chip-item"><input type="radio" name="trip_type" value="Couple"><div class="chip-box">💑 Couple</div></label>
+                  <label class="chip-item"><input type="radio" name="trip_type" value="Friends" checked><div class="chip-box">👥 Friends</div></label>
+                  <label class="chip-item"><input type="radio" name="trip_type" value="Family"><div class="chip-box">👨‍👩‍👦 Family</div></label>
+                  <label class="chip-item"><input type="radio" name="trip_type" value="Pilgrimage"><div class="chip-box">🕉️ Pilgrimage</div></label>
+                  <label class="chip-item"><input type="radio" name="trip_type" value="Adventure"><div class="chip-box">🧗 Adventure</div></label>
+                </div>
+              </div>
+
+              <!-- Interests Multi-select -->
+              <div class="form-group">
+                <label>Interests & Themes (Select all that appeal)</label>
+                <div class="chip-selector">
+                  <label class="chip-item"><input type="checkbox" name="trip_interest" value="Beaches" checked><div class="chip-box">🏖️ Beaches</div></label>
+                  <label class="chip-item"><input type="checkbox" name="trip_interest" value="History"><div class="chip-box">🏛️ History & Forts</div></label>
+                  <label class="chip-item"><input type="checkbox" name="trip_interest" value="Food" checked><div class="chip-box">🍛 Local Food</div></label>
+                  <label class="chip-item"><input type="checkbox" name="trip_interest" value="Adventure" checked><div class="chip-box">🪂 Adventure</div></label>
+                  <label class="chip-item"><input type="checkbox" name="trip_interest" value="Nature"><div class="chip-box">🌿 Nature & Hills</div></label>
+                  <label class="chip-item"><input type="checkbox" name="trip_interest" value="Spiritual"><div class="chip-box">🙏 Spiritual</div></label>
+                  <label class="chip-item"><input type="checkbox" name="trip_interest" value="Shopping"><div class="chip-box">🛍️ Shopping</div></label>
+                </div>
+              </div>
+
+              <div class="wizard-actions-bar" style="display:flex; justify-content:flex-end; gap:12px; margin-top:30px;">
+                <button type="submit" class="btn btn-primary btn-lg">
+                  Generate Travel Plan ➔
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ==================== STEP 2: GENERATE TRAVEL PLAN ==================== -->
+        <div id="wizard-step-2" class="wizard-step-content">
+          <div class="card" style="margin-bottom:24px;">
+            <div class="step-heading-row">
+              <div>
+                <h3>Step 2: Day-Wise Itinerary Sequence</h3>
+                <p style="color:var(--text-muted); font-size:0.92rem;">
+                  Ordered by nearest attractions first. <strong>Drag-and-drop</strong> cards to reorder activities anytime.
+                </p>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-sm btn-outline" onclick="window.WizardApp.generateTripPlan(); window.WizardApp.renderStep2(); window.App.showToast('Regenerated fresh itinerary sequence!', 'info');">
+                  🔄 Regenerate
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="window.WizardApp.undoLastEdit()">
+                  ↩️ Undo
+                </button>
+              </div>
+            </div>
+
+            <!-- Day Selector Tabs -->
+            <div class="itinerary-day-tabs" id="step2-day-tabs">
+              <!-- Populated via JS -->
+            </div>
+
+            <!-- Interactive Timeline -->
+            <div class="timeline-container" id="step2-timeline">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <!-- Interactive SVG Route Map Visualizer -->
+          <div class="card" style="padding:24px; margin-bottom:30px;">
+            <h4 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+              <i data-lucide="map" style="color:var(--primary);"></i> Route Sequence Overview
+            </h4>
+            <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:20px; text-align:center;">
+              <svg width="100%" height="90" viewBox="0 0 600 90" style="max-width:600px; margin:0 auto; display:block;">
+                <line x1="60" y1="45" x2="540" y2="45" stroke="#0d9488" stroke-width="4" stroke-dasharray="8 6"/>
+                <circle cx="60" cy="45" r="14" fill="#0d9488"/>
+                <text x="60" y="78" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Departure</text>
+                <circle cx="220" cy="45" r="10" fill="#0284c7"/>
+                <text x="220" y="78" font-size="11" font-weight="600" text-anchor="middle" fill="currentColor">Hotel Check-in</text>
+                <circle cx="380" cy="45" r="10" fill="#f97316"/>
+                <text x="380" y="78" font-size="11" font-weight="600" text-anchor="middle" fill="currentColor">Top Sights</text>
+                <circle cx="540" cy="45" r="14" fill="#10b981"/>
+                <text x="540" y="78" font-size="12" font-weight="700" text-anchor="middle" fill="currentColor">Return Travel</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="wizard-actions-bar" style="display:flex; justify-content:space-between; gap:12px;">
+            <button class="btn btn-outline" onclick="window.WizardApp.prevStep()">← Previous</button>
+            <button class="btn btn-primary btn-lg" onclick="window.WizardApp.nextStep()">Compare Expenses ➔</button>
+          </div>
+        </div>
+
+        <!-- ==================== STEP 3: COMPARE EACH EXPENSE ==================== -->
+        <div id="wizard-step-3" class="wizard-step-content">
+          <div class="card" style="margin-bottom:24px;">
+            <div class="step-heading-row">
+              <div>
+                <h3>Step 3: Compare Category Expenses (Cheapest / Standard / Premium)</h3>
+                <p style="color:var(--text-muted); font-size:0.92rem;">
+                  Pick the tier that matches your preference for each category. "Best Value" options are highlighted.
+                </p>
+              </div>
+              <span class="tag tag-primary">Step 3 of 6</span>
+            </div>
+
+            <!-- Expense Category Cards Container -->
+            <div id="step3-expense-categories">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <div class="wizard-actions-bar" style="display:flex; justify-content:space-between; gap:12px;">
+            <button class="btn btn-outline" onclick="window.WizardApp.prevStep()">← Previous</button>
+            <button class="btn btn-primary btn-lg" onclick="window.WizardApp.nextStep()">Customize Budget ➔</button>
+          </div>
+        </div>
+
+        <!-- ==================== STEP 4: CUSTOMIZE BUDGET & OPTIMIZE ==================== -->
+        <div id="wizard-step-4" class="wizard-step-content">
+          <!-- Live Budget Summary Dashboard -->
+          <div class="budget-summary-banner">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3>Step 4: Live Budget Optimization Dashboard</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem;">Every cost below is inline-editable. Click any amount to adjust manually.</p>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-sm btn-outline" onclick="window.WizardApp.undoLastEdit()">↩️ Undo</button>
+                <button class="btn btn-sm btn-outline" onclick="window.WizardApp.saveDraft(); window.App.showToast('Draft saved!', 'success');">💾 Save Draft</button>
+              </div>
+            </div>
+
+            <!-- Color Status Alert Bar -->
+            <div id="budget-color-alert" class="budget-alert-bar alert-under">
+              <!-- Populated dynamically via JS -->
+            </div>
+
+            <!-- 4 Stat Boxes -->
+            <div class="budget-stats-grid">
+              <div class="budget-stat-box">
+                <div class="stat-label">Total Target Budget</div>
+                <div class="stat-value" id="stat-total-budget">₹20,000</div>
+              </div>
+              <div class="budget-stat-box">
+                <div class="stat-label">Total Planned Cost</div>
+                <div class="stat-value" id="stat-total-planned" style="color:var(--primary);">₹18,838</div>
+              </div>
+              <div class="budget-stat-box">
+                <div class="stat-label">Remaining Budget</div>
+                <div class="stat-value" id="stat-remaining-budget" style="color:var(--success);">₹1,162</div>
+              </div>
+              <div class="budget-stat-box">
+                <div class="stat-label">Budget Used %</div>
+                <div class="stat-value" id="stat-percent-used">94%</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;" id="stat-per-person">₹9,419 / person</div>
+              </div>
+            </div>
+
+            <!-- Magic "Optimize My Budget" Button Banner -->
+            <div class="optimizer-trigger-card">
+              <div>
+                <h4 style="margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+                  <span>⚡</span> "Optimize My Budget" Magic Engine
+                </h4>
+                <p style="font-size:0.88rem; color:var(--text-muted);">
+                  Over budget? Let our algorithm automatically downgrade high-cost categories step by step until the trip fits!
+                </p>
+              </div>
+              <button class="btn btn-accent btn-lg" onclick="window.WizardApp.triggerBudgetOptimizer()">
+                ✨ Optimize My Budget
+              </button>
+            </div>
+
+            <!-- Charts Container: Donut & Bar Chart -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:25px;">
+              <div class="card" style="padding:16px;">
+                <h5 style="margin-bottom:12px; text-align:center;">Category Expense Breakdown</h5>
+                <div style="height:220px; position:relative;">
+                  <canvas id="budget-donut-chart"></canvas>
+                </div>
+              </div>
+              <div class="card" style="padding:16px;">
+                <h5 style="margin-bottom:12px; text-align:center;">Target Budget vs Planned</h5>
+                <div style="height:220px; position:relative;">
+                  <canvas id="budget-bar-chart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editable Items Table -->
+          <div class="card" style="margin-bottom:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h4>Line-Item Expenses (Click Amount to Edit)</h4>
+              <button class="btn btn-sm btn-outline" onclick="window.App.showModal('Add Custom Expense', '<form onsubmit=\'event.preventDefault(); window.WizardApp.addCustomExpense(document.getElementById(&quot;cust-name&quot;).value, document.getElementById(&quot;cust-cat&quot;).value, document.getElementById(&quot;cust-amt&quot;).value); window.App.closeModal();\'><div class=\'form-group\'><label>Expense Name *</label><input type=\'text\' id=\'cust-name\' required placeholder=\'e.g. Scuba Photography Package\'></div><div class=\'form-group\'><label>Category</label><input type=\'text\' id=\'cust-cat\' value=\'Activities\'></div><div class=\'form-group\'><label>Amount in ₹ *</label><input type=\'number\' id=\'cust-amt\' required placeholder=\'1500\'></div><button type=\'submit\' class=\'btn btn-primary\' style=\'width:100%;\'>Add Item</button></form>')">
+                + Add Custom Expense
+              </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="booking-items-table">
+                <thead>
+                  <tr>
+                    <th>Item & Category</th>
+                    <th>Tier</th>
+                    <th>Amount (Click to Edit)</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="step4-expenses-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="wizard-actions-bar" style="display:flex; justify-content:space-between; gap:12px;">
+            <button class="btn btn-outline" onclick="window.WizardApp.prevStep()">← Previous</button>
+            <button class="btn btn-primary btn-lg" onclick="window.WizardApp.nextStep()">Proceed to Bookings ➔</button>
+          </div>
+        </div>
+
+        <!-- ==================== STEP 5: BOOK EACH SERVICE ==================== -->
+        <div id="wizard-step-5" class="wizard-step-content">
+          <div class="card" style="margin-bottom:24px;">
+            <div class="step-heading-row">
+              <div>
+                <h3>Step 5: Integrated Service Bookings</h3>
+                <p style="color:var(--text-muted); font-size:0.92rem;">
+                  Every eligible item can be booked individually, or you can bundle checkout all services together.
+                </p>
+              </div>
+              <span class="demo-mode-badge">⚡ DEMO MODE - SIMULATED</span>
+            </div>
+
+            <!-- Promo Code Bar -->
+            <div class="card" style="padding:16px; background:var(--bg-page); margin-bottom:20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div style="flex:1; min-width:200px;">
+                <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">HAVE A PROMO CODE?</label>
+                <input type="text" id="wizard-coupon-input" placeholder="e.g. TRIP10 or BUDGET500" style="text-transform:uppercase;">
+              </div>
+              <button class="btn btn-primary" onclick="const res = window.BookingManager.applyCoupon(document.getElementById('wizard-coupon-input').value, window.WizardApp.trip.totalPlanned); window.App.showToast(res.message, res.success ? 'success' : 'warning'); if(res.success) window.WizardApp.renderStep5();" style="margin-top:20px;">
+                Apply Coupon
+              </button>
+            </div>
+
+            <!-- Service Items Table -->
+            <div style="overflow-x:auto;">
+              <table class="booking-items-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px;">Select</th>
+                    <th>Service & Partner</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="step5-booking-items-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:12px;">
+              <div>
+                <span style="font-size:0.88rem; color:var(--text-muted);">Selected Items Total:</span>
+                <strong id="step5-selected-total" style="font-size:1.3rem; color:var(--primary); margin-left:8px;">₹0</strong>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-outline" onclick="window.WizardApp.bookAllSelected()">Book Selected Items</button>
+                <button class="btn btn-primary" onclick="window.WizardApp.openBookingModal('All Trip Services Bundle', window.WizardApp.trip.totalPlanned, 'Complete Package')">Book All Services (1-Click)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="wizard-actions-bar" style="display:flex; justify-content:space-between; gap:12px;">
+            <button class="btn btn-outline" onclick="window.WizardApp.prevStep()">← Previous</button>
+            <button class="btn btn-primary btn-lg" onclick="window.WizardApp.nextStep()">View Final Itinerary & Bills ➔</button>
+          </div>
+        </div>
+
+        <!-- ==================== STEP 6: FINAL ITINERARY & BILLS ==================== -->
+        <div id="wizard-step-6" class="wizard-step-content">
+          <div class="card" style="margin-bottom:24px;">
+            <div class="step-heading-row">
+              <div>
+                <span class="tag tag-success" style="margin-bottom:6px;">Trip Confirmed & Planned</span>
+                <h3 id="step6-dest-header">Pune ➔ Goa (4 Days / 3 Nights)</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem;">Review your itemized tax invoice, booking references, and export your itinerary.</p>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="window.BookingManager.downloadPdfItinerary(window.WizardApp.trip)">
+                  📄 Download PDF
+                </button>
+                <button class="btn btn-outline" onclick="window.print()">
+                  🖨️ Print
+                </button>
+                <button class="btn btn-outline" onclick="window.BookingManager.shareOnWhatsApp(window.WizardApp.trip)">
+                  WhatsApp
+                </button>
+                <button class="btn btn-outline" onclick="window.WizardApp.saveTripToMyTrips()">
+                  💾 Save Trip
+                </button>
+              </div>
+            </div>
+
+            <!-- Tax Invoice Table -->
+            <h4 style="margin:24px 0 12px;">Tax Invoice & Expense Bill</h4>
+            <div style="overflow-x:auto;">
+              <table class="booking-items-table">
+                <thead>
+                  <tr>
+                    <th>Item Description</th>
+                    <th>Tier / Mode</th>
+                    <th style="text-align:right;">Amount (INR)</th>
+                  </tr>
+                </thead>
+                <tbody id="step6-invoice-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" style="text-align:right; font-weight:700;">Subtotal:</td>
+                    <td style="text-align:right;" id="step6-subtotal">₹0</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="text-align:right; font-weight:700; color:var(--success);">Promo Discount:</td>
+                    <td style="text-align:right; color:var(--success);" id="step6-discount">- ₹0</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="text-align:right; font-weight:700;">Taxes & GST (Simulated ~8%):</td>
+                    <td style="text-align:right;" id="step6-gst">₹0</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="text-align:right; font-weight:700;">Convenience & Platform Fee:</td>
+                    <td style="text-align:right;" id="step6-fee">₹199</td>
+                  </tr>
+                  <tr style="font-size:1.2rem; background:var(--bg-page);">
+                    <td colspan="2" style="text-align:right; font-weight:800; color:var(--primary);">Final Grand Total:</td>
+                    <td style="text-align:right; font-weight:800; color:var(--primary);" id="step6-grand-total">₹0</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <div class="wizard-actions-bar" style="display:flex; justify-content:space-between; gap:12px;">
+            <button class="btn btn-outline" onclick="window.WizardApp.prevStep()">← Previous (Bookings)</button>
+            <button class="btn btn-primary" onclick="window.location.hash='#my-trips'">View in My Trips ➔</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         PAGE 3: DESTINATIONS GALLERY (#destinations)
+         ========================================================================== -->
+    <section id="view-destinations" class="page-view">
+      <div class="container" style="padding:40px 0 80px;">
+        <div style="margin-bottom:30px;">
+          <span class="tag tag-primary">Explore India</span>
+          <h1 style="font-size:2.5rem; margin-top:6px;">Destinations Directory</h1>
+          <p style="color:var(--text-muted); font-size:1.05rem;">Search, filter by region and categories, and view detailed costs for 54+ handpicked Indian destinations.</p>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="card" style="padding:20px; margin-bottom:30px;">
+          <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px; margin-bottom:16px;">
+            <div>
+              <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">SEARCH DESTINATIONS</label>
+              <input type="text" id="dest-search-input" placeholder="Type destination, state, or theme..." oninput="window.App.renderDestinationsGallery(document.getElementById('dest-region-filter').value, this.value, 'all')">
+            </div>
+            <div>
+              <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">REGION</label>
+              <select id="dest-region-filter" onchange="window.App.renderDestinationsGallery(this.value, document.getElementById('dest-search-input').value, 'all')">
+                <option value="all">All Regions</option>
+                <option value="North">North India</option>
+                <option value="South">South India</option>
+                <option value="West">West India</option>
+                <option value="East">East India</option>
+                <option value="Central">Central India</option>
+                <option value="Islands">Islands</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.8rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">QUICK FINDER</label>
+              <button class="btn btn-outline" style="width:100%; height:44px;" onclick="window.App.showModal('Where can I go in ₹10,000?', '<div style=\'padding:10px;\'><p style=\'margin-bottom:14px;\'>Enter your budget and days to find matching getaways:</p><div class=\'form-grid-2\'><div class=\'form-group\'><label>Budget (₹)</label><input type=\'number\' id=\'quick-find-amt\' value=\'10000\'></div><div class=\'form-group\'><label>Days</label><input type=\'number\' id=\'quick-find-days\' value=\'3\'></div></div><button class=\'btn btn-primary\' style=\'width:100%;\' onclick=\'const res = window.TravelTools.suggestDestinationsByBudget(Number(document.getElementById(&quot;quick-find-amt&quot;).value), Number(document.getElementById(&quot;quick-find-days&quot;).value)); document.getElementById(&quot;quick-find-results&quot;).innerHTML = res.slice(0,5).map(d => `<div class=&quot;card&quot; style=&quot;padding:10px; margin-top:8px; display:flex; justify-content:space-between; align-items:center;&quot;><div><strong>${d.name}</strong> (${d.state})<div style=&quot;font-size:0.8rem; color:var(--text-muted);&quot;>Budget avg: ₹${d.avg_daily_cost.budget}/day</div></div><button class=&quot;btn btn-sm btn-primary&quot; onclick=&quot;window.App.planTripFor(\\\'${d.id}\\\')&quot;>Plan</button></div>`).join(&quot;&quot;);\\'>Find Destinations</button><div id=\'quick-find-results\' style=\'margin-top:16px;\'></div></div>')">
+                Where can I go in ₹10k?
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div class="quick-filter-pills" style="margin-top:0;">
+              <span>Theme:</span>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery(document.getElementById('dest-region-filter').value, '', 'all')">All</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Beach')">Beach</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Snow')">Snow</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Hills')">Hills</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Heritage')">Heritage</button>
+              <button class="filter-chip" onclick="window.App.renderDestinationsGallery('all', '', 'Spiritual')">Spiritual</button>
+            </div>
+            <div id="destinations-count-label" style="font-size:0.85rem; font-weight:700; color:var(--text-muted);">
+              Showing 54 Destinations
+            </div>
+          </div>
+        </div>
+
+        <!-- Destination Cards Grid -->
+        <div class="destination-grid" id="destinations-gallery-grid">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         PAGE 4: DESTINATION DETAIL VIEW (#detail/:id)
+         ========================================================================== -->
+    <section id="view-detail" class="page-view">
+      <!-- Dynamically populated by window.App.renderDestinationDetail(id) -->
+    </section>
+
+    <!-- ==========================================================================
+         PAGE 5: MY TRIPS (#my-trips)
+         ========================================================================== -->
+    <section id="view-my-trips" class="page-view">
+      <div class="container" style="padding:40px 0 80px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:15px;">
+          <div>
+            <span class="tag tag-primary">Saved Travel Plans</span>
+            <h1 style="font-size:2.4rem; margin-top:6px;">My Trips</h1>
+            <p style="color:var(--text-muted);">Persisted in your local browser storage. Re-open in the wizard or export anytime.</p>
+          </div>
+          <button class="btn btn-primary" onclick="window.location.hash='#plan'">+ Plan New Trip</button>
+        </div>
+
+        <div id="my-trips-list">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         PAGE 6: BOOKINGS & BILLS (#bookings)
+         ========================================================================== -->
+    <section id="view-bookings" class="page-view">
+      <div class="container" style="padding:40px 0 80px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:15px;">
+          <div>
+            <span class="tag tag-primary">Booking Hub</span>
+            <h1 style="font-size:2.4rem; margin-top:6px;">Bookings & Vouchers</h1>
+            <p style="color:var(--text-muted);">Manage your simulated train tickets, hotel reservations, and activities.</p>
+          </div>
+          <span class="demo-mode-badge">⚡ SIMULATED BOOKINGS</span>
+        </div>
+
+        <div class="card">
+          <div style="overflow-x:auto;">
+            <table class="booking-items-table">
+              <thead>
+                <tr>
+                  <th>Booking Ref</th>
+                  <th>Service Details</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-list-table">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         PAGE 7: ABOUT & TECHNICAL INTEGRATION TABLE (#about)
+         ========================================================================== -->
+    <section id="view-about" class="page-view">
+      <div class="container" style="padding:40px 0 80px;">
+        <div class="section-head" style="margin-bottom:40px;">
+          <span class="tag tag-primary">Project Background & Architecture</span>
+          <h1 style="font-size:2.5rem; margin-top:6px;">About TripSmart</h1>
+          <p>Smart Budget Travel Planner with Integrated Booking and Cost Optimization</p>
+        </div>
+
+        <div class="card" style="margin-bottom:35px;">
+          <h3>Mission & Problem Solved</h3>
+          <p style="margin:12px 0; color:var(--text-muted); font-size:0.95rem; line-height:1.7;">
+            TripSmart eliminates the friction of modern travel planning. Rather than jumping between five different portals and maintaining tedious spreadsheets, TripSmart generates a synchronized day-wise sequence, automatically compares Budget, Standard, and Premium tiers across each category, and features an algorithmic cost optimizer that downgrades non-essential components step-by-step until the total fits your exact budget.
+          </p>
+        </div>
+
+        <!-- Technical Integration Table Section -->
+        <div class="card" style="margin-bottom:35px;">
+          <h3 style="margin-bottom:8px;">Technical Integration Roadmap</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">
+            Below is the comprehensive integration matrix required to scale this prototype into a full-scale commercial platform.
+          </p>
+
+          <div style="overflow-x:auto;">
+            <table class="booking-items-table">
+              <thead>
+                <tr>
+                  <th style="width:28%;">Booking Category</th>
+                  <th>Integration Needed</th>
+                  <th>Architecture Implementation in TripSmart</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Train tickets in India</strong></td>
+                  <td>Authorized railway booking integration (IRCTC) or an eligible principal service partner.</td>
+                  <td>Implemented via simulated <code>MockAPI.searchTrains()</code> with train numbers, classes (Sleeper, 3AC, 2AC, Vande Bharat), schedules, and PNR simulation.</td>
+                </tr>
+                <tr>
+                  <td><strong>Hotels</strong></td>
+                  <td>Hotel inventory and reservation API or direct hotel CRS partnerships (Amadeus, Sabre, RateGain).</td>
+                  <td>Structured in <code>MockAPI.searchHotels()</code> supporting Budget, Standard, and Luxury tiers with rate calculation.</td>
+                </tr>
+                <tr>
+                  <td><strong>Flights and buses</strong></td>
+                  <td>Supplier or aggregator booking and ticketing APIs (GDS, RedBus API, Skyscanner).</td>
+                  <td>Modelled with realistic flight durations, airline carriers (IndiGo, Air India), and intercity electric buses (Zingbus, IntrCity).</td>
+                </tr>
+                <tr>
+                  <td><strong>Activities & Sightseeing</strong></td>
+                  <td>Attraction operators, ticketing partners (GetYourGuide, Viator, ASI ticketing).</td>
+                  <td>Built into <code>MockAPI.searchActivities()</code> with duration, entry fees, and slot reservations.</td>
+                </tr>
+                <tr>
+                  <td><strong>Payments</strong></td>
+                  <td>Payment gateway (Razorpay, Stripe, Cashfree, Pine Labs UPI).</td>
+                  <td>Simulated in <code>BookingManager.processSimulatedPayment()</code> supporting UPI QR, Cards, and Net Banking with Demo Mode validation.</td>
+                </tr>
+                <tr>
+                  <td><strong>Booking history & user state</strong></td>
+                  <td>Backend and database (Node.js + Express + MongoDB/PostgreSQL).</td>
+                  <td>Persisted locally via <code>localStorage</code> with complete offline capability, PWA caching, and jsPDF invoice rendering.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="footer-disclaimer" style="margin-top:20px; margin-bottom:0;">
+            <i data-lucide="alert-circle" style="color:var(--primary);"></i>
+            <span>
+              <strong>Note on Prototype:</strong> This application simulates bookings with mock data and test reference IDs. Real booking requires authorized supplier connections and enterprise credentials.
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="app-footer">
+    <div class="container">
+      <div class="footer-disclaimer">
+        <i data-lucide="shield-check" style="color:var(--primary); width:20px; height:20px;"></i>
+        <span>
+          <strong>TripSmart Prototype Notice:</strong> Demonstrates budget optimization and simulated travel bookings with mock Indian data. Works fully offline via localStorage without a server.
+        </span>
+      </div>
+
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#home" class="brand-logo">
+            <div class="brand-icon"><i data-lucide="compass"></i></div>
+            <span>Trip<span class="brand-highlight">Smart</span></span>
+          </a>
+          <p>The all-in-one smart budget travel planner with day-wise sequencing, 3-tier expense comparison, and live budget optimization.</p>
+          <div class="social-links">
+            <a href="#" class="social-link" title="Twitter"><i data-lucide="twitter"></i></a>
+            <a href="#" class="social-link" title="Instagram"><i data-lucide="instagram"></i></a>
+            <a href="#" class="social-link" title="LinkedIn"><i data-lucide="linkedin"></i></a>
+            <a href="#" class="social-link" title="GitHub"><i data-lucide="github"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#plan">Plan a Trip</a></li>
+            <li><a href="#destinations">Destinations (54+)</a></li>
+            <li><a href="#my-trips">Saved Trips</a></li>
+            <li><a href="#bookings">My Bookings</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Smart Tools</h4>
+          <ul>
+            <li><a href="javascript:void(0)" onclick="window.App.showModal('Group Splitter', '<div id=\'modal-splitter-content\'></div>'); window.TravelTools.calculateSettlements(window.TravelTools.getGroupExpenses());">Group Splitter</a></li>
+            <li><a href="javascript:void(0)" onclick="window.App.showModal('Packing Checklist', '<div id=\'modal-packing-content\'></div>');">Packing Checklist</a></li>
+            <li><a href="javascript:void(0)" onclick="window.App.showModal('Offers', '<div class=\'card\'><strong>TRIP10</strong>: 10% off simulated bookings</div>');">Promo Codes</a></li>
+            <li><a href="#about">Technical Architecture</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contact & Support</h4>
+          <ul>
+            <li><span>📍 Bengaluru & Pune, India</span></li>
+            <li><span>📧 support@tripsmart.demo</span></li>
+            <li><span>📞 Tourist Helpline: 1363</span></li>
+            <li><span>🚨 Police: 112 | Medical: 108</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 TripSmart – Smart Budget Travel Planner. Crafted for modern travelers.</div>
+        <div style="display:flex; gap:16px;">
+          <a href="#about">Privacy Policy</a>
+          <a href="#about">Terms of Service</a>
+          <a href="#about">Integration Specs</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       FLOATING "ASK TRIPSMART" CHATBOT WIDGET
+       ========================================================================== -->
+  <div class="chatbot-toggle-btn" onclick="document.getElementById('chatbot-window').classList.toggle('active')" title="Ask TripSmart Assistant" aria-label="Open AI Travel Assistant">
+    <i data-lucide="message-square"></i>
+  </div>
+
+  <div class="chatbot-window" id="chatbot-window">
+    <div class="chatbot-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="bot"></i>
+        <div>
+          <strong style="font-size:0.95rem;">Ask TripSmart AI</strong>
+          <div style="font-size:0.75rem; opacity:0.85;">Budget & Travel Assistant</div>
+        </div>
+      </div>
+      <button onclick="document.getElementById('chatbot-window').classList.remove('active')" style="color:white; font-size:1.2rem; cursor:pointer;">×</button>
+    </div>
+
+    <div class="chatbot-messages" id="chatbot-messages-wrap">
+      <!-- Populated via js/chatbot.js -->
+    </div>
+
+    <form class="chatbot-input-bar" onsubmit="event.preventDefault(); const inp=document.getElementById('chatbot-input'); if(inp.value.trim()){ window.TripChatbot.addUserMessage(inp.value.trim()); inp.value=''; }">
+      <input type="text" id="chatbot-input" placeholder="Ask about places, budget, tips..." style="flex:1; padding:8px 12px; font-size:0.85rem;">
+      <button type="submit" class="btn btn-sm btn-primary">Send</button>
+    </form>
+  </div>
+
+  <!-- Reusable App Modal Overlay -->
+  <div class="modal-overlay" id="app-modal-overlay" onclick="if(event.target === this) window.App.closeModal();">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title" style="font-size:1.35rem;">TripSmart</h3>
+        <button onclick="window.App.closeModal()" style="font-size:1.4rem; color:var(--text-light); cursor:pointer;">×</button>
+      </div>
+      <div id="modal-body">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Autocomplete Datalists -->
+  <datalist id="cities-datalist">
+    <option value="Pune">
+    <option value="Mumbai">
+    <option value="Delhi">
+    <option value="Bengaluru">
+    <option value="Hyderabad">
+    <option value="Chennai">
+    <option value="Kolkata">
+    <option value="Ahmedabad">
+    <option value="Jaipur">
+    <option value="Surat">
+    <option value="Lucknow">
+    <option value="Chandigarh">
+  </datalist>
+
+  <datalist id="destinations-datalist">
+    <option value="Goa">
+    <option value="Jaipur">
+    <option value="Udaipur">
+    <option value="Manali">
+    <option value="Varanasi">
+    <option value="Leh-Ladakh">
+    <option value="Munnar">
+    <option value="Alleppey">
+    <option value="Rishikesh">
+    <option value="Agra">
+    <option value="Hampi">
+    <option value="Andaman (Port Blair & Havelock)">
+    <option value="Darjeeling">
+    <option value="Amritsar">
+    <option value="Shimla">
+    <option value="Srinagar">
+    <option value="Pondicherry">
+    <option value="Coorg">
+    <option value="Ooty">
+    <option value="Rann of Kutch">
+    <option value="Statue of Unity">
+    <option value="Jodhpur">
+    <option value="Jaisalmer">
+    <option value="Khajuraho">
+    <option value="Mysore">
+    <option value="Kochi">
+    <option value="Gangtok">
+    <option value="Shillong">
+    <option value="Hyderabad">
+    <option value="Puri">
+    <option value="Madurai">
+    <option value="Rameswaram">
+    <option value="Tirupati">
+    <option value="Kolkata">
+    <option value="Kodaikanal">
+    <option value="Nashik">
+    <option value="Shirdi">
+    <option value="Aurangabad">
+    <option value="Ujjain">
+    <option value="Mount Abu">
+    <option value="Kedarnath & Badrinath">
+    <option value="Gokarna">
+    <option value="Spiti Valley">
+    <option value="Auli">
+  </datalist>
+
+  <!-- Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/mockApi.js"></script>
+  <script src="js/tools.js"></script>
+  <script src="js/optimizer.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/chatbot.js"></script>
+  <script src="js/wizard.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

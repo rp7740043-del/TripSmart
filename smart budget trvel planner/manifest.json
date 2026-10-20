@@ -1,0 +1,21 @@
+{
+  "name": "TripSmart – Smart Budget Travel Planner",
+  "short_name": "TripSmart",
+  "description": "Smart Budget Travel Planner with Integrated Booking and Cost Optimization",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=192&auto=format&fit=crop&q=80",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=512&auto=format&fit=crop&q=80",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
